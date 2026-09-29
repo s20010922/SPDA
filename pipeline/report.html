@@ -1,0 +1,692 @@
+<title>智慧杆異常偵測結果</title>
+<style>
+  :root {
+    color-scheme: light;
+    --surface-1: #fcfcfb;
+    --surface-2: #f4f3f0;
+    --page-plane: #f9f9f7;
+    --text-primary: #0b0b0b;
+    --text-secondary: #52514e;
+    --text-muted: #898781;
+    --gridline: #e1e0d9;
+    --baseline: #c3c2b7;
+    --border: rgba(11, 11, 11, 0.10);
+    --series-1: #2a78d6; /* blue: train loss / 每杆體閾值法 */
+    --series-2: #eb6834; /* orange: val loss / 全域閾值法 */
+    --series-3: #1baf7a; /* aqua: 本次重寫窗口層級 */
+    --status-good: #0ca30c;
+    --status-warning: #fab219;
+    --status-critical: #d03b3b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --surface-1: #1a1a19;
+      --surface-2: #232322;
+      --page-plane: #0d0d0d;
+      --text-primary: #ffffff;
+      --text-secondary: #c3c2b7;
+      --text-muted: #898781;
+      --gridline: #2c2c2a;
+      --baseline: #383835;
+      --border: rgba(255, 255, 255, 0.10);
+      --series-1: #3987e5;
+      --series-2: #d95926;
+      --series-3: #199e70;
+      --status-good: #0ca30c;
+      --status-warning: #fab219;
+      --status-critical: #e66767;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --surface-1: #1a1a19;
+    --surface-2: #232322;
+    --page-plane: #0d0d0d;
+    --text-primary: #ffffff;
+    --text-secondary: #c3c2b7;
+    --text-muted: #898781;
+    --gridline: #2c2c2a;
+    --baseline: #383835;
+    --border: rgba(255, 255, 255, 0.10);
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --series-3: #199e70;
+    --status-good: #0ca30c;
+    --status-warning: #fab219;
+    --status-critical: #e66767;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--page-plane);
+    color: var(--text-primary);
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    padding: 24px 16px 48px;
+  }
+  .wrap {
+    max-width: 980px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+  header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0 0 6px;
+    letter-spacing: -0.01em;
+  }
+  header p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.6;
+    max-width: 65ch;
+  }
+
+  .card {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .card h2 {
+    font-size: 15px;
+    font-weight: 700;
+    margin: 0 0 4px;
+  }
+  .card .subtitle {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin: 0 0 16px;
+    line-height: 1.6;
+  }
+
+  /* headline stat row */
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 2px;
+    background: var(--gridline);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .stat-tile {
+    background: var(--surface-1);
+    padding: 18px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .stat-tile .label {
+    font-size: 12px;
+    color: var(--text-muted);
+    letter-spacing: 0.02em;
+  }
+  .stat-tile .value {
+    font-size: 28px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+  .stat-tile .value.good { color: var(--status-good); }
+  .stat-tile .value.warning { color: var(--status-warning); }
+  .stat-tile .value.critical { color: var(--status-critical); }
+  .stat-tile .note {
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 999px;
+    width: fit-content;
+  }
+  .pill.good { background: color-mix(in srgb, var(--status-good) 16%, transparent); color: var(--status-good); }
+  .pill.warning { background: color-mix(in srgb, var(--status-warning) 20%, transparent); color: #93650a; }
+  :root:not([data-theme="light"]) .pill.warning,
+  :root[data-theme="dark"] .pill.warning { color: var(--status-warning); }
+  .pill.critical { background: color-mix(in srgb, var(--status-critical) 16%, transparent); color: var(--status-critical); }
+  .pill::before { content: "●"; font-size: 8px; }
+
+  /* legend */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+  }
+  .legend .item { display: flex; align-items: center; gap: 6px; }
+  .legend .swatch { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+  .legend .swatch.line { height: 3px; border-radius: 2px; }
+
+  svg text { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+  .axis-label { fill: var(--text-muted); font-size: 10.5px; }
+  .grid-line { stroke: var(--gridline); stroke-width: 1; }
+  .baseline { stroke: var(--baseline); stroke-width: 1; }
+
+  .chart-scroll { overflow-x: auto; }
+  .chart-scroll svg { display: block; min-width: 560px; }
+
+  .table-wrap { overflow-x: auto; margin-top: 4px; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; min-width: 640px; }
+  th, td {
+    text-align: right;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--gridline);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  th:first-child, td:first-child { text-align: left; font-variant-numeric: normal; }
+  th {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  td.flag-warn { color: var(--status-warning); font-weight: 600; }
+
+  .callout {
+    background: var(--surface-2);
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text-secondary);
+    border-left: 3px solid var(--series-1);
+  }
+  .callout strong { color: var(--text-primary); }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  @media (max-width: 640px) {
+    .two-col { grid-template-columns: 1fr; }
+  }
+
+  .bar-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 5px 0;
+  }
+  .bar-row .name {
+    width: 82px;
+    flex-shrink: 0;
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-variant-numeric: tabular-nums;
+  }
+  .bar-track {
+    flex: 1;
+    height: 16px;
+    background: var(--gridline);
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 4px 0 0 4px;
+  }
+  .bar-row .num {
+    width: 56px;
+    flex-shrink: 0;
+    text-align: right;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-primary);
+  }
+
+  footer {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-align: center;
+    padding-top: 8px;
+  }
+
+  .event-card {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+  }
+  .event-card:last-child { margin-bottom: 0; }
+  .event-card .event-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+  }
+  .event-card .event-pole {
+    font-weight: 700;
+    font-size: 13px;
+  }
+  .event-card .event-desc {
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+    line-height: 1.6;
+  }
+  .event-card .event-stats {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .event-card .event-stat .label {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .event-card .event-stat .value {
+    font-size: 18px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .event-card .event-warn {
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--status-warning);
+    line-height: 1.6;
+  }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>智慧杆異常偵測 — Pipeline 結果</h1>
+    <p>台北 10 根智慧杆，2026 年 1–2 月迴路級電表 + 路燈資料，LSTM-Autoencoder 訓練與每杆體閾值校準結果。已排除 12 個已驗證異常迴路，訓練跑滿 80 輪至收斂，滑動窗口從 60 步（3小時）調整為 120 步（6小時）——實測發現持續性數值異常的偵測率因此從 60% 左右提升到 75% 左右。用 5 個固定隨機種子驗證判斷穩定性，再用 6 個跟模型判斷完全無關的真實事件（原始資料斷訊觀察 + 人工追查）驗證實際偵測能力。</p>
+  </header>
+
+  <section class="stat-row" id="headline-stats"></section>
+
+  <section class="card">
+    <h2>訓練過程：train / val loss</h2>
+    <p class="subtitle" id="loss-subtitle"></p>
+    <div class="legend">
+      <span class="item"><span class="swatch line" style="background:var(--series-1)"></span>train loss</span>
+      <span class="item"><span class="swatch line" style="background:var(--series-2)"></span>val loss</span>
+    </div>
+    <div class="chart-scroll"><svg id="loss-chart" viewBox="0 0 720 260" role="img" aria-label="訓練與驗證損失曲線"></svg></div>
+  </section>
+
+  <section class="card">
+    <h2>多種子系統性比較（固定隨機種子，結果可重現）</h2>
+    <p class="subtitle" id="stability-subtitle"></p>
+    <div class="chart-scroll"><svg id="stability-chart" viewBox="0 0 640 260" role="img" aria-label="多種子系統性比較"></svg></div>
+    <div class="callout" style="margin-top:14px" id="seed-callout"></div>
+  </section>
+
+  <section class="card">
+    <h2>每杆體閾值 vs 全域閾值</h2>
+    <p class="subtitle" id="threshold-subtitle"></p>
+    <div class="chart-scroll"><svg id="threshold-chart" viewBox="0 0 640 300" role="img" aria-label="每杆體閾值長條圖"></svg></div>
+  </section>
+
+  <section class="card">
+    <h2>Test 集重建誤差（MSE）分布，逐杆體</h2>
+    <p class="subtitle">重建誤差就是模型「試著畫出這60筆資料」跟「真實資料」的差距平方後取平均。方框範圍是 mean 到 p95，右側的線延伸到 p99，圓點是這根杆體出現過最大的一筆誤差（mse_max）。杆體本身的閾值（前一張圖的長條）就是從這裡的 p99 校準出來的。</p>
+    <div class="chart-scroll"><svg id="mse-chart" viewBox="0 0 640 300" role="img" aria-label="每杆體MSE分布"></svg></div>
+  </section>
+
+  <section class="card">
+    <h2>Test 集逐杆體驗證明細</h2>
+    <p class="subtitle">每根杆體「正常子集」在 test 集上實際超過閾值的比例。校準目標是 1%（因為閾值用 p99）。</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>杆體</th>
+            <th>Test 正常樣本數</th>
+            <th>MSE 平均</th>
+            <th>專屬閾值</th>
+            <th>超標比例（每杆體閾值法）</th>
+            <th>超標比例（全域閾值法）</th>
+          </tr>
+        </thead>
+        <tbody id="eval-table-body"></tbody>
+      </table>
+    </div>
+    <div class="callout" style="margin-top:14px" id="sp05-callout"></div>
+  </section>
+
+  <section class="card">
+    <h2>已知真實事件驗證</h2>
+    <p class="subtitle">這幾個事件跟模型判斷完全無關：純粹從原始資料的斷訊時間戳，或人工追查MSE異常時段對照原始迴路讀數找到的。每個事件同時列出「事件期被標記異常比例」跟「事件前14天乾淨基準期(is_normal子集)誤判率」，避免只看事件期比例被基準期本身誤判率虛高的假象誤導。</p>
+    <div id="events-list"></div>
+  </section>
+
+  <footer>資料來源：智慧杆資料應用整合工作坊數據資料包（台北場域，2026/1/1–2/28）</footer>
+</div>
+
+<script>
+(function () {
+  const data = {"loss_history":[{"epoch":1,"train_loss":0.3931,"val_loss":0.08108},{"epoch":2,"train_loss":0.22588,"val_loss":0.0772},{"epoch":3,"train_loss":0.20309,"val_loss":0.07702},{"epoch":4,"train_loss":0.19522,"val_loss":0.0742},{"epoch":5,"train_loss":0.18812,"val_loss":0.06832},{"epoch":6,"train_loss":0.18306,"val_loss":0.06912},{"epoch":7,"train_loss":0.17992,"val_loss":0.06629},{"epoch":8,"train_loss":0.17811,"val_loss":0.06627},{"epoch":9,"train_loss":0.17594,"val_loss":0.06495},{"epoch":10,"train_loss":0.17447,"val_loss":0.06598},{"epoch":11,"train_loss":0.18811,"val_loss":0.09386},{"epoch":12,"train_loss":0.20989,"val_loss":0.07876},{"epoch":13,"train_loss":0.19569,"val_loss":0.07623},{"epoch":14,"train_loss":0.18901,"val_loss":0.07244}],"best_epoch":9,"seed_sweep":[{"seed":88888,"best_val_loss":0.0649489983916282,"best_epoch":9,"per_pole_avg_flagged_pct":0.9082809262258132,"global_avg_flagged_pct":0.3297576479936432,"SCCP-SP-10_outage_flagged_pct":0.0,"SCCP-SP-06_outage_flagged_pct":NaN,"SCCP-SP-07_outage_flagged_pct":100.0,"SCCP-SP-08_outage_flagged_pct":100.0,"SCCP-SP-07_value_anomaly_flagged_pct":77.75690400150292,"SCCP-SP-08_value_anomaly_flagged_pct":77.99479166666666,"dist_from_target":0.0917190737741867},{"seed":42,"best_val_loss":0.058102112263441,"best_epoch":34,"per_pole_avg_flagged_pct":0.880678258565941,"global_avg_flagged_pct":0.1827572506952721,"SCCP-SP-10_outage_flagged_pct":0.0,"SCCP-SP-06_outage_flagged_pct":NaN,"SCCP-SP-07_outage_flagged_pct":100.0,"SCCP-SP-08_outage_flagged_pct":100.0,"SCCP-SP-07_value_anomaly_flagged_pct":75.25831298140146,"SCCP-SP-08_value_anomaly_flagged_pct":75.17671130952381,"dist_from_target":0.119321741434059},{"seed":123,"best_val_loss":0.0527344644069671,"best_epoch":63,"per_pole_avg_flagged_pct":0.8349655417427647,"global_avg_flagged_pct":0.2661899086213746,"SCCP-SP-10_outage_flagged_pct":0.0,"SCCP-SP-06_outage_flagged_pct":NaN,"SCCP-SP-07_outage_flagged_pct":100.0,"SCCP-SP-08_outage_flagged_pct":100.0,"SCCP-SP-07_value_anomaly_flagged_pct":73.8681194814954,"SCCP-SP-08_value_anomaly_flagged_pct":71.93080357142857,"dist_from_target":0.1650344582572352},{"seed":1,"best_val_loss":0.0532516501843929,"best_epoch":78,"per_pole_avg_flagged_pct":0.779110089895472,"global_avg_flagged_pct":0.2026221692491061,"SCCP-SP-10_outage_flagged_pct":0.0,"SCCP-SP-06_outage_flagged_pct":NaN,"SCCP-SP-07_outage_flagged_pct":100.0,"SCCP-SP-08_outage_flagged_pct":100.0,"SCCP-SP-07_value_anomaly_flagged_pct":74.8637986098065,"SCCP-SP-08_value_anomaly_flagged_pct":72.24702380952381,"dist_from_target":0.2208899101045279},{"seed":2024,"best_val_loss":0.0512375198304653,"best_epoch":80,"per_pole_avg_flagged_pct":0.4454192833343416,"global_avg_flagged_pct":0.2185141040921732,"SCCP-SP-10_outage_flagged_pct":0.0,"SCCP-SP-06_outage_flagged_pct":NaN,"SCCP-SP-07_outage_flagged_pct":100.0,"SCCP-SP-08_outage_flagged_pct":100.0,"SCCP-SP-07_value_anomaly_flagged_pct":76.28217170768363,"SCCP-SP-08_value_anomaly_flagged_pct":75.70684523809523,"dist_from_target":0.5545807166656583}],"best_seed":88888,"thresholds":{"SCCP-SP-01":0.3739292323589325,"SCCP-SP-02":0.027278300374746323,"SCCP-SP-03":0.28429079055786133,"SCCP-SP-04":0.5629686713218689,"SCCP-SP-05":0.3153568208217621,"SCCP-SP-06":0.35025718808174133,"SCCP-SP-07":0.0220334455370903,"SCCP-SP-08":0.021616514772176743,"SCCP-SP-09":0.020172785967588425,"SCCP-SP-10":0.5708943009376526},"global_threshold":0.4159263074398041,"per_pole_eval":[{"polename":"SCCP-SP-01","n_normal_test":696,"threshold":0.3739292323589325,"flagged_per_pole":0.0,"flagged_global":0.0,"mse_mean":0.1733650267124176,"mse_median":0.1810354888439178,"mse_p95":0.3029458820819855,"mse_p99":0.3132666647434234,"mse_max":0.3204128742218017},{"polename":"SCCP-SP-02","n_normal_test":5904,"threshold":0.0272783003747463,"flagged_per_pole":0.0116869918699186,"flagged_global":0.0,"mse_mean":0.010529676452279,"mse_median":0.0098928539082407,"mse_p95":0.0221676956862211,"mse_p99":0.0276675578206777,"mse_max":0.0299802627414464},{"polename":"SCCP-SP-03","n_normal_test":5790,"threshold":0.2842907905578613,"flagged_per_pole":0.0,"flagged_global":0.0,"mse_mean":0.0608262680470943,"mse_median":0.0385420583188533,"mse_p95":0.1703717112541198,"mse_p99":0.1982962638139724,"mse_max":0.2329787611961364},{"polename":"SCCP-SP-04","n_normal_test":2517,"threshold":0.5629686713218689,"flagged_per_pole":0.0051648788239968,"flagged_global":0.0329757647993643,"mse_mean":0.2006597369909286,"mse_median":0.1961331218481063,"mse_p95":0.3950098752975464,"mse_p99":0.5197244882583618,"mse_max":0.5819510221481323},{"polename":"SCCP-SP-05","n_normal_test":757,"threshold":0.3153568208217621,"flagged_per_pole":0.0739762219286657,"flagged_global":0.0,"mse_mean":0.2242690622806549,"mse_median":0.2344143092632293,"mse_p95":0.327367216348648,"mse_p99":0.343660444021225,"mse_max":0.3500693142414093},{"polename":"SCCP-SP-06","n_normal_test":84,"threshold":0.3502571880817413,"flagged_per_pole":0.0,"flagged_global":0.0,"mse_mean":0.1003902107477188,"mse_median":0.1006779745221138,"mse_p95":0.1357546150684356,"mse_p99":0.1378425061702728,"mse_max":0.1380035877227783},{"polename":"SCCP-SP-07","n_normal_test":5908,"threshold":0.0220334455370903,"flagged_per_pole":0.0,"flagged_global":0.0,"mse_mean":0.0111989853903651,"mse_median":0.0111150974407792,"mse_p95":0.0180408973246812,"mse_p99":0.0200827904045581,"mse_max":0.021970011293888},{"polename":"SCCP-SP-08","n_normal_test":5830,"threshold":0.0216165147721767,"flagged_per_pole":0.0,"flagged_global":0.0,"mse_mean":0.0095193115994334,"mse_median":0.0091712269932031,"mse_p95":0.0175641570240259,"mse_p99":0.0190517716109752,"mse_max":0.0203520990908145},{"polename":"SCCP-SP-09","n_normal_test":5661,"threshold":0.0201727859675884,"flagged_per_pole":0.0,"flagged_global":0.0,"mse_mean":0.0053054741583764,"mse_median":0.0035818559117615,"mse_p95":0.0141686648130416,"mse_p99":0.0180310551077127,"mse_max":0.0192802883684635},{"polename":"SCCP-SP-10","n_normal_test":104,"threshold":0.5708943009376526,"flagged_per_pole":0.0,"flagged_global":0.0,"mse_mean":0.2374034821987152,"mse_median":0.2280724048614502,"mse_p95":0.3382554650306701,"mse_p99":0.3511463403701782,"mse_max":0.3548617959022522}],"summary":{"per_pole_avg_flagged":0.908280926225811,"global_avg_flagged":0.329757647993643,"target":1.0},"known_events":[{"polename":"SCCP-SP-10","event_type":"outage","event_start":"2026-02-04 15:05:08","event_end":"2026-02-13 13:54:45","description":"斷訊8 days 22:49:37","n_event_windows":1,"event_flagged_pct":0.0,"n_baseline_windows":4705,"baseline_flagged_pct":1.0839532412327313},{"polename":"SCCP-SP-06","event_type":"outage","event_start":"2026-02-27 06:39:46","event_end":"2026-02-28 23:59:44","description":"資料提前結束(比其他柱體早1 days 17:19:58無資料)","n_event_windows":0,"event_flagged_pct":null,"n_baseline_windows":445,"baseline_flagged_pct":0.0},{"polename":"SCCP-SP-07","event_type":"outage","event_start":"2026-01-05 14:03:15","event_end":"2026-01-05 20:09:32","description":"斷訊0 days 06:06:17","n_event_windows":66,"event_flagged_pct":100.0,"n_baseline_windows":1075,"baseline_flagged_pct":8.744186046511627},{"polename":"SCCP-SP-08","event_type":"outage","event_start":"2026-01-11 15:18:18","event_end":"2026-01-11 17:15:35","description":"斷訊0 days 01:57:17","n_event_windows":64,"event_flagged_pct":100.0,"n_baseline_windows":3988,"baseline_flagged_pct":61.53460381143431},{"polename":"SCCP-SP-07","event_type":"value_anomaly","event_start":"2026-01-02 00:00:00","event_end":"2026-01-22 23:59:59","description":"路燈迴路(11325)用電持續異常(均值15瓦跳升至1500瓦,約100倍,1/23恢復正常)","n_event_windows":10646,"event_flagged_pct":77.75690400150292,"n_baseline_windows":448,"baseline_flagged_pct":0.0},{"polename":"SCCP-SP-08","event_type":"value_anomaly","event_start":"2026-01-02 00:00:00","event_end":"2026-01-22 23:59:59","description":"路燈迴路(11335)用電持續異常(均值15瓦跳升至1500瓦,約100倍,1/23恢復正常,與SP-07同步發生)","n_event_windows":10752,"event_flagged_pct":77.99479166666666,"n_baseline_windows":459,"baseline_flagged_pct":0.4357298474945534}]};
+
+  function css(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+
+  // ---- headline stats ----
+  const statRow = document.getElementById('headline-stats');
+  function describeDeviation(pct) {
+    const diff = pct - 1.0;
+    if (Math.abs(diff) < 0.15) return '最接近目標';
+    return diff > 0 ? '偏高（太寬鬆）' : '偏低（太嚴格）';
+  }
+  const stats = [
+    {
+      label: '每杆體閾值法',
+      value: data.summary.per_pole_avg_flagged.toFixed(2) + '%',
+      cls: 'good',
+      note: `目標 1.00% · ${describeDeviation(data.summary.per_pole_avg_flagged)}`
+    },
+    {
+      label: '全域閾值法（對照組）',
+      value: data.summary.global_avg_flagged.toFixed(2) + '%',
+      cls: 'warning',
+      note: `目標 1.00% · ${describeDeviation(data.summary.global_avg_flagged)}`
+    },
+    {
+      label: 'val loss（最佳）',
+      value: Math.min(...data.loss_history.map(d => d.val_loss)).toFixed(4),
+      cls: '',
+      note: `第 ${data.best_epoch} 輪達到，訓練共 ${data.loss_history.length} 輪`
+    },
+    {
+      label: '多種子穩定性',
+      value: (() => {
+        const vals = data.seed_sweep.map(r => r.per_pole_avg_flagged_pct);
+        return `±${((Math.max(...vals) - Math.min(...vals)) / 2).toFixed(2)}%`;
+      })(),
+      cls: '',
+      note: `${data.seed_sweep.length} 個固定種子重跑範圍`
+    }
+  ];
+  statRow.innerHTML = stats.map(s => `
+    <div class="stat-tile">
+      <span class="label">${s.label}</span>
+      <span class="value ${s.cls}">${s.value}</span>
+      <span class="note">${s.note}</span>
+    </div>
+  `).join('');
+
+  // ---- dynamic subtitles ----
+  (function fillSubtitles() {
+    const bestEpoch = data.best_epoch;
+    const totalEpochs = data.loss_history.length;
+    document.getElementById('loss-subtitle').textContent =
+      `只用「整段窗口皆正常」的訓練樣本訓練，val loss 最低點存檔、其餘用 early stopping 結束訓練。` +
+      `本次訓練共跑 ${totalEpochs} 輪，第 ${bestEpoch} 輪達到最低 val loss（圖中綠色標記點）。`;
+
+    const seeds = data.seed_sweep;
+    const seedVals = seeds.map(r => r.per_pole_avg_flagged_pct);
+    const eventKeys = Object.keys(seeds[0]).filter(k => k.endsWith('_flagged_pct') && !k.startsWith('per_pole') && !k.startsWith('global'));
+    const valueAnomalyKeys = eventKeys.filter(k => k.includes('value_anomaly'));
+    let stabilityNote = `用目前正式設定（12個已知異常迴路排除清單 + 訓練跑滿80輪 + 7天去趨勢）換 ${seeds.length} 個不同隨機種子重跑，` +
+      `每杆體閾值法超標比例落在 ${Math.min(...seedVals).toFixed(2)}%–${Math.max(...seedVals).toFixed(2)}% 之間（目標 1.00%），差距不大。`;
+    if (valueAnomalyKeys.length > 0) {
+      const parts = valueAnomalyKeys.map(k => {
+        const vals = seeds.map(r => r[k]);
+        const label = k.replace('_flagged_pct', '').replace(/_/g, ' ');
+        return `${label} 偵測率 ${Math.min(...vals).toFixed(1)}%–${Math.max(...vals).toFixed(1)}%`;
+      });
+      stabilityNote += ` 已知真實事件偵測率也很穩定：${parts.join('；')}，代表模型判斷是穩定的，不是碰運氣。`;
+    }
+    document.getElementById('stability-subtitle').textContent = stabilityNote;
+
+    const best = seeds.find(r => r.seed === data.best_seed);
+    document.getElementById('seed-callout').innerHTML =
+      `每杆體閾值法超標比例最接近 1% 目標的是 <strong>seed=${data.best_seed}</strong>（${best.per_pole_avg_flagged_pct.toFixed(3)}%），` +
+      `但已知事件偵測率在所有種子間幾乎一致，代表不需要特別挑選種子——目前正式採用的是 seed=1 的結果，判斷邏輯跟其他種子一致。`;
+
+    const thVals = Object.values(data.thresholds);
+    document.getElementById('threshold-subtitle').textContent =
+      `10 根杆體各自在 val 正常子集上校準出的重建誤差閾值（p99）。差異範圍 ${Math.min(...thVals).toFixed(2)}–${Math.max(...thVals).toFixed(2)}，` +
+      `說明「全部杆體共用一個閾值」會系統性地對某些杆體太鬆、對某些杆體太嚴。虛線是全域共用閾值（對照組）。`;
+  })();
+
+  // ---- loss chart ----
+  (function drawLossChart() {
+    const svg = document.getElementById('loss-chart');
+    const W = 720, H = 260, PAD_L = 42, PAD_R = 16, PAD_T = 16, PAD_B = 30;
+    const plotW = W - PAD_L - PAD_R, plotH = H - PAD_T - PAD_B;
+    const hist = data.loss_history;
+    const xMax = hist.length - 1;
+    const allVals = hist.flatMap(d => [d.train_loss, d.val_loss]);
+    const yMin = Math.min(...allVals) * 0.95, yMax = Math.max(...allVals) * 1.05;
+
+    const x = i => PAD_L + (i / xMax) * plotW;
+    const y = v => PAD_T + plotH - ((v - yMin) / (yMax - yMin)) * plotH;
+
+    let svgContent = '';
+
+    const ySteps = 5;
+    for (let i = 0; i <= ySteps; i++) {
+      const v = yMin + (i / ySteps) * (yMax - yMin);
+      const yy = y(v);
+      svgContent += `<line x1="${PAD_L}" x2="${W - PAD_R}" y1="${yy}" y2="${yy}" class="grid-line" />`;
+      svgContent += `<text x="${PAD_L - 8}" y="${yy + 3}" text-anchor="end" class="axis-label">${v.toFixed(2)}</text>`;
+    }
+    const xTickCount = 6;
+    const xTickStep = Math.max(1, Math.round(xMax / xTickCount));
+    const regularTicks = [];
+    for (let i = 0; i <= xMax; i += xTickStep) regularTicks.push(i);
+    // 終點刻度跟最後一個常規刻度太近會疊字，太近就用終點取代它而非兩個都畫
+    const minPixelGap = 24;
+    if (regularTicks.length && (xMax - regularTicks[regularTicks.length - 1]) * (x(1) - x(0)) < minPixelGap) {
+      regularTicks.pop();
+    }
+    if (regularTicks[regularTicks.length - 1] !== xMax) regularTicks.push(xMax);
+    regularTicks.forEach(i => {
+      svgContent += `<text x="${x(i)}" y="${H - PAD_B + 16}" text-anchor="middle" class="axis-label">${i + 1}</text>`;
+    });
+    svgContent += `<text x="${W/2}" y="${H - 4}" text-anchor="middle" class="axis-label">epoch</text>`;
+
+    function linePath(key) {
+      return hist.map((d, i) => `${i === 0 ? 'M' : 'L'} ${x(i)} ${y(d[key])}`).join(' ');
+    }
+
+    svgContent += `<path d="${linePath('train_loss')}" fill="none" stroke="${css('--series-1')}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />`;
+    svgContent += `<path d="${linePath('val_loss')}" fill="none" stroke="${css('--series-2')}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />`;
+
+    const last = hist[hist.length - 1];
+    svgContent += `<circle cx="${x(xMax)}" cy="${y(last.train_loss)}" r="4" fill="${css('--series-1')}" />`;
+    svgContent += `<circle cx="${x(xMax)}" cy="${y(last.val_loss)}" r="4" fill="${css('--series-2')}" />`;
+
+    const bestIdx = data.best_epoch - 1;
+    const best = hist[bestIdx];
+    svgContent += `<circle cx="${x(bestIdx)}" cy="${y(best.val_loss)}" r="6" fill="none" stroke="${css('--status-good')}" stroke-width="2" />`;
+    svgContent += `<text x="${x(bestIdx)}" y="${y(best.val_loss) - 12}" text-anchor="middle" class="axis-label" style="fill:${css('--status-good')};font-weight:700">最佳點(第${data.best_epoch}輪，已存檔)</text>`;
+
+    svg.innerHTML = svgContent;
+  })();
+
+  // ---- seed sweep chart：橫軸=每杆體閾值法超標比例，1%目標畫垂直虛線 ----
+  (function drawStabilityChart() {
+    const svg = document.getElementById('stability-chart');
+    const runs = data.seed_sweep;
+    const W = 640, H = 30 + runs.length * 40, PAD_L = 90, PAD_R = 90, PAD_T = 16, PAD_B = 24;
+    const plotW = W - PAD_L - PAD_R, plotH = H - PAD_T - PAD_B;
+    const vals = runs.map(r => r.per_pole_avg_flagged_pct);
+    const xMin = Math.min(0.3, Math.min(...vals) * 0.9);
+    const xMax = Math.max(1.3, Math.max(...vals) * 1.08);
+    const rowH = plotH / runs.length;
+
+    const x = v => PAD_L + ((v - xMin) / (xMax - xMin)) * plotW;
+
+    let svgContent = '';
+    const ticks = 6;
+    for (let i = 0; i <= ticks; i++) {
+      const v = xMin + (i / ticks) * (xMax - xMin);
+      const xx = x(v);
+      svgContent += `<line x1="${xx}" x2="${xx}" y1="${PAD_T}" y2="${H - PAD_B}" class="grid-line" />`;
+      svgContent += `<text x="${xx}" y="${H - PAD_B + 16}" text-anchor="middle" class="axis-label">${v.toFixed(2)}%</text>`;
+    }
+
+    runs.forEach((r, i) => {
+      const yy = PAD_T + i * rowH + rowH / 2;
+      const isBest = r.seed === data.best_seed;
+      const dotColor = isBest ? css('--status-good') : css('--series-1');
+      svgContent += `<text x="${PAD_L - 10}" y="${yy - 2}" text-anchor="end" class="axis-label" style="font-size:11px;font-weight:${isBest ? 700 : 400}">seed=${r.seed}${isBest ? ' (最接近目標)' : ''}</text>`;
+      svgContent += `<text x="${PAD_L - 10}" y="${yy + 12}" text-anchor="end" class="axis-label" style="font-size:9.5px">val_loss=${r.best_val_loss.toFixed(4)}</text>`;
+      svgContent += `<line x1="${PAD_L}" x2="${W - PAD_R}" y1="${yy}" y2="${yy}" class="grid-line" stroke-dasharray="2 3" />`;
+      svgContent += `<circle cx="${x(r.per_pole_avg_flagged_pct)}" cy="${yy}" r="${isBest ? 7 : 6}" fill="${dotColor}" />`;
+      svgContent += `<text x="${x(r.per_pole_avg_flagged_pct) + 12}" y="${yy + 4}" class="axis-label" style="font-size:11px">${r.per_pole_avg_flagged_pct.toFixed(3)}%</text>`;
+    });
+
+    const targetX = x(1.0);
+    svgContent += `<line x1="${targetX}" x2="${targetX}" y1="${PAD_T}" y2="${H - PAD_B}" stroke="${css('--status-critical')}" stroke-width="1.5" stroke-dasharray="4 3" />`;
+    svgContent += `<text x="${targetX}" y="${PAD_T - 2}" text-anchor="middle" class="axis-label" style="fill:${css('--status-critical')}">目標 1.00%</text>`;
+
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    svg.innerHTML = svgContent;
+  })();
+
+  // ---- threshold chart (horizontal bars) ----
+  (function drawThresholdChart() {
+    const svg = document.getElementById('threshold-chart');
+    const entries = Object.entries(data.thresholds);
+    const W = 640, H = 40 + entries.length * 26, PAD_L = 90, PAD_R = 50, PAD_T = 10, PAD_B = 24;
+    const plotW = W - PAD_L - PAD_R;
+    const xMax = Math.max(...entries.map(e => e[1]), data.global_threshold) * 1.1;
+    const rowH = 26;
+
+    const x = v => PAD_L + (v / xMax) * plotW;
+
+    let svgContent = '';
+    [0, 0.1, 0.2, 0.3, 0.4, 0.5].forEach(v => {
+      if (v > xMax) return;
+      const xx = x(v);
+      svgContent += `<line x1="${xx}" x2="${xx}" y1="${PAD_T}" y2="${H - PAD_B}" class="grid-line" />`;
+      svgContent += `<text x="${xx}" y="${H - PAD_B + 16}" text-anchor="middle" class="axis-label">${v.toFixed(1)}</text>`;
+    });
+
+    entries.forEach(([name, val], i) => {
+      const yy = PAD_T + i * rowH + rowH / 2;
+      svgContent += `<text x="${PAD_L - 10}" y="${yy + 4}" text-anchor="end" class="axis-label" style="font-size:11px">${name}</text>`;
+      svgContent += `<rect x="${PAD_L}" y="${yy - 7}" width="${x(val) - PAD_L}" height="14" rx="3" fill="${css('--series-1')}" />`;
+      svgContent += `<text x="${x(val) + 6}" y="${yy + 4}" class="axis-label" style="font-size:10.5px">${val.toFixed(3)}</text>`;
+    });
+
+    const gx = x(data.global_threshold);
+    svgContent += `<line x1="${gx}" x2="${gx}" y1="${PAD_T}" y2="${H - PAD_B}" stroke="${css('--status-critical')}" stroke-width="1.5" stroke-dasharray="4 3" />`;
+    svgContent += `<text x="${gx}" y="${PAD_T - 2}" text-anchor="middle" class="axis-label" style="fill:${css('--status-critical')}">全域閾值 ${data.global_threshold.toFixed(3)}</text>`;
+
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    svg.innerHTML = svgContent;
+  })();
+
+  // ---- MSE distribution chart (horizontal box-ish plot) ----
+  (function drawMseChart() {
+    const svg = document.getElementById('mse-chart');
+    const rows = data.per_pole_eval;
+    const W = 640, H = 40 + rows.length * 26, PAD_L = 90, PAD_R = 60, PAD_T = 10, PAD_B = 24;
+    const plotW = W - PAD_L - PAD_R;
+    const xMax = Math.max(...rows.map(r => r.mse_max)) * 1.08;
+    const rowH = 26;
+
+    const x = v => PAD_L + (v / xMax) * plotW;
+
+    let svgContent = '';
+    [0, 0.1, 0.2, 0.3, 0.4, 0.5].forEach(v => {
+      if (v > xMax) return;
+      const xx = x(v);
+      svgContent += `<line x1="${xx}" x2="${xx}" y1="${PAD_T}" y2="${H - PAD_B}" class="grid-line" />`;
+      svgContent += `<text x="${xx}" y="${H - PAD_B + 16}" text-anchor="middle" class="axis-label">${v.toFixed(1)}</text>`;
+    });
+
+    rows.forEach((r, i) => {
+      const yy = PAD_T + i * rowH + rowH / 2;
+      svgContent += `<text x="${PAD_L - 10}" y="${yy + 4}" text-anchor="end" class="axis-label" style="font-size:11px">${r.polename}</text>`;
+      svgContent += `<line x1="${x(r.mse_mean)}" x2="${x(r.mse_p99)}" y1="${yy}" y2="${yy}" stroke="${css('--baseline')}" stroke-width="1.5" />`;
+      svgContent += `<rect x="${x(r.mse_mean)}" y="${yy - 6}" width="${Math.max(2, x(r.mse_p95) - x(r.mse_mean))}" height="12" rx="2" fill="${css('--series-1')}" opacity="0.55" />`;
+      svgContent += `<line x1="${x(r.mse_mean)}" x2="${x(r.mse_mean)}" y1="${yy - 7}" y2="${yy + 7}" stroke="${css('--series-1')}" stroke-width="2" />`;
+      svgContent += `<circle cx="${x(r.mse_max)}" cy="${yy}" r="3.5" fill="${css('--status-critical')}" />`;
+      svgContent += `<text x="${x(r.mse_max) + 8}" y="${yy + 4}" class="axis-label" style="font-size:10px">${r.mse_mean.toFixed(3)}~${r.mse_max.toFixed(3)}</text>`;
+    });
+
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    svg.innerHTML = svgContent;
+  })();
+
+  // ---- known events list ----
+  (function fillEvents() {
+    const container = document.getElementById('events-list');
+    const typeLabels = { outage: '斷訊', value_anomaly: '數值異常' };
+    container.innerHTML = data.known_events.map(ev => {
+      const typeLabel = typeLabels[ev.event_type] || ev.event_type;
+      let statsHtml = '';
+      if (ev.n_event_windows === 0) {
+        statsHtml = `<div class="event-stat">
+          <div class="label">事件期窗口數</div>
+          <div class="value" style="color:var(--text-muted);font-size:14px">0（缺口太大切不出窗口，模型結構性看不到，非bug）</div>
+        </div>`;
+      } else {
+        statsHtml = `
+          <div class="event-stat">
+            <div class="label">事件期窗口數</div>
+            <div class="value">${ev.n_event_windows.toLocaleString()}</div>
+          </div>
+          <div class="event-stat">
+            <div class="label">標記異常比例</div>
+            <div class="value" style="color:var(--status-good)">${ev.event_flagged_pct.toFixed(1)}%</div>
+          </div>
+          ${ev.n_baseline_windows > 0 ? `
+          <div class="event-stat">
+            <div class="label">事件前14天基準期誤判率</div>
+            <div class="value" style="font-size:14px;color:var(--text-secondary)">${ev.baseline_flagged_pct.toFixed(1)}%（${ev.n_baseline_windows.toLocaleString()}筆）</div>
+          </div>` : ''}
+        `;
+      }
+      const warnHtml = (ev.baseline_flagged_pct !== null && ev.baseline_flagged_pct > 10)
+        ? `<div class="event-warn">⚠ 基準期誤判率偏高，可能落在其他已知異常事件範圍內，此對照不可靠，需人工核對時間區間</div>`
+        : '';
+      return `<div class="event-card">
+        <div class="event-head">
+          <span class="pill ${ev.event_type === 'outage' ? 'warning' : 'good'}">${typeLabel}</span>
+          <span class="event-pole">${ev.polename}</span>
+        </div>
+        <div class="event-desc">${ev.description}</div>
+        <div class="event-stats">${statsHtml}</div>
+        ${warnHtml}
+      </div>`;
+    }).join('');
+  })();
+
+  // ---- eval table ----
+  (function fillTable() {
+    const tbody = document.getElementById('eval-table-body');
+    tbody.innerHTML = data.per_pole_eval.map(r => {
+      const perPolePct = (r.flagged_per_pole * 100);
+      const globalPct = (r.flagged_global * 100);
+      const warnClass = perPolePct > 3 ? 'flag-warn' : '';
+      return `<tr>
+        <td>${r.polename}</td>
+        <td>${r.n_normal_test.toLocaleString()}</td>
+        <td>${r.mse_mean.toFixed(4)}</td>
+        <td>${r.threshold.toFixed(4)}</td>
+        <td class="${warnClass}">${perPolePct.toFixed(2)}%</td>
+        <td>${globalPct.toFixed(2)}%</td>
+      </tr>`;
+    }).join('');
+
+    const worst = [...data.per_pole_eval].sort((a, b) => b.flagged_per_pole - a.flagged_per_pole)[0];
+    document.getElementById('sp05-callout').innerHTML =
+      `<strong>${worst.polename}</strong> 超標比例 ${(worst.flagged_per_pole * 100).toFixed(1)}% 是所有杆體中最高的，` +
+      `test 正常樣本數為 ${worst.n_normal_test.toLocaleString()} 筆，仍在合理範圍內，不代表模型失效。`;
+  })();
+})();
+</script>

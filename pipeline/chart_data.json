@@ -1,0 +1,356 @@
+{
+  "loss_history": [
+    {
+      "epoch": 1,
+      "train_loss": 0.3931,
+      "val_loss": 0.08108
+    },
+    {
+      "epoch": 2,
+      "train_loss": 0.22588,
+      "val_loss": 0.0772
+    },
+    {
+      "epoch": 3,
+      "train_loss": 0.20309,
+      "val_loss": 0.07702
+    },
+    {
+      "epoch": 4,
+      "train_loss": 0.19522,
+      "val_loss": 0.0742
+    },
+    {
+      "epoch": 5,
+      "train_loss": 0.18812,
+      "val_loss": 0.06832
+    },
+    {
+      "epoch": 6,
+      "train_loss": 0.18306,
+      "val_loss": 0.06912
+    },
+    {
+      "epoch": 7,
+      "train_loss": 0.17992,
+      "val_loss": 0.06629
+    },
+    {
+      "epoch": 8,
+      "train_loss": 0.17811,
+      "val_loss": 0.06627
+    },
+    {
+      "epoch": 9,
+      "train_loss": 0.17594,
+      "val_loss": 0.06495
+    },
+    {
+      "epoch": 10,
+      "train_loss": 0.17447,
+      "val_loss": 0.06598
+    },
+    {
+      "epoch": 11,
+      "train_loss": 0.18811,
+      "val_loss": 0.09386
+    },
+    {
+      "epoch": 12,
+      "train_loss": 0.20989,
+      "val_loss": 0.07876
+    },
+    {
+      "epoch": 13,
+      "train_loss": 0.19569,
+      "val_loss": 0.07623
+    },
+    {
+      "epoch": 14,
+      "train_loss": 0.18901,
+      "val_loss": 0.07244
+    }
+  ],
+  "best_epoch": 9,
+  "seed_sweep": [
+    {
+      "seed": 88888,
+      "best_val_loss": 0.0649489983916282,
+      "best_epoch": 9,
+      "per_pole_avg_flagged_pct": 0.9082809262258132,
+      "global_avg_flagged_pct": 0.3297576479936432,
+      "SCCP-SP-10_outage_flagged_pct": 0.0,
+      "SCCP-SP-06_outage_flagged_pct": NaN,
+      "SCCP-SP-07_outage_flagged_pct": 100.0,
+      "SCCP-SP-08_outage_flagged_pct": 100.0,
+      "SCCP-SP-07_value_anomaly_flagged_pct": 77.75690400150292,
+      "SCCP-SP-08_value_anomaly_flagged_pct": 77.99479166666666,
+      "dist_from_target": 0.0917190737741867
+    },
+    {
+      "seed": 42,
+      "best_val_loss": 0.058102112263441,
+      "best_epoch": 34,
+      "per_pole_avg_flagged_pct": 0.880678258565941,
+      "global_avg_flagged_pct": 0.1827572506952721,
+      "SCCP-SP-10_outage_flagged_pct": 0.0,
+      "SCCP-SP-06_outage_flagged_pct": NaN,
+      "SCCP-SP-07_outage_flagged_pct": 100.0,
+      "SCCP-SP-08_outage_flagged_pct": 100.0,
+      "SCCP-SP-07_value_anomaly_flagged_pct": 75.25831298140146,
+      "SCCP-SP-08_value_anomaly_flagged_pct": 75.17671130952381,
+      "dist_from_target": 0.119321741434059
+    },
+    {
+      "seed": 123,
+      "best_val_loss": 0.0527344644069671,
+      "best_epoch": 63,
+      "per_pole_avg_flagged_pct": 0.8349655417427647,
+      "global_avg_flagged_pct": 0.2661899086213746,
+      "SCCP-SP-10_outage_flagged_pct": 0.0,
+      "SCCP-SP-06_outage_flagged_pct": NaN,
+      "SCCP-SP-07_outage_flagged_pct": 100.0,
+      "SCCP-SP-08_outage_flagged_pct": 100.0,
+      "SCCP-SP-07_value_anomaly_flagged_pct": 73.8681194814954,
+      "SCCP-SP-08_value_anomaly_flagged_pct": 71.93080357142857,
+      "dist_from_target": 0.1650344582572352
+    },
+    {
+      "seed": 1,
+      "best_val_loss": 0.0532516501843929,
+      "best_epoch": 78,
+      "per_pole_avg_flagged_pct": 0.779110089895472,
+      "global_avg_flagged_pct": 0.2026221692491061,
+      "SCCP-SP-10_outage_flagged_pct": 0.0,
+      "SCCP-SP-06_outage_flagged_pct": NaN,
+      "SCCP-SP-07_outage_flagged_pct": 100.0,
+      "SCCP-SP-08_outage_flagged_pct": 100.0,
+      "SCCP-SP-07_value_anomaly_flagged_pct": 74.8637986098065,
+      "SCCP-SP-08_value_anomaly_flagged_pct": 72.24702380952381,
+      "dist_from_target": 0.2208899101045279
+    },
+    {
+      "seed": 2024,
+      "best_val_loss": 0.0512375198304653,
+      "best_epoch": 80,
+      "per_pole_avg_flagged_pct": 0.4454192833343416,
+      "global_avg_flagged_pct": 0.2185141040921732,
+      "SCCP-SP-10_outage_flagged_pct": 0.0,
+      "SCCP-SP-06_outage_flagged_pct": NaN,
+      "SCCP-SP-07_outage_flagged_pct": 100.0,
+      "SCCP-SP-08_outage_flagged_pct": 100.0,
+      "SCCP-SP-07_value_anomaly_flagged_pct": 76.28217170768363,
+      "SCCP-SP-08_value_anomaly_flagged_pct": 75.70684523809523,
+      "dist_from_target": 0.5545807166656583
+    }
+  ],
+  "best_seed": 88888,
+  "thresholds": {
+    "SCCP-SP-01": 0.3739292323589325,
+    "SCCP-SP-02": 0.027278300374746323,
+    "SCCP-SP-03": 0.28429079055786133,
+    "SCCP-SP-04": 0.5629686713218689,
+    "SCCP-SP-05": 0.3153568208217621,
+    "SCCP-SP-06": 0.35025718808174133,
+    "SCCP-SP-07": 0.0220334455370903,
+    "SCCP-SP-08": 0.021616514772176743,
+    "SCCP-SP-09": 0.020172785967588425,
+    "SCCP-SP-10": 0.5708943009376526
+  },
+  "global_threshold": 0.4159263074398041,
+  "per_pole_eval": [
+    {
+      "polename": "SCCP-SP-01",
+      "n_normal_test": 696,
+      "threshold": 0.3739292323589325,
+      "flagged_per_pole": 0.0,
+      "flagged_global": 0.0,
+      "mse_mean": 0.1733650267124176,
+      "mse_median": 0.1810354888439178,
+      "mse_p95": 0.3029458820819855,
+      "mse_p99": 0.3132666647434234,
+      "mse_max": 0.3204128742218017
+    },
+    {
+      "polename": "SCCP-SP-02",
+      "n_normal_test": 5904,
+      "threshold": 0.0272783003747463,
+      "flagged_per_pole": 0.0116869918699186,
+      "flagged_global": 0.0,
+      "mse_mean": 0.010529676452279,
+      "mse_median": 0.0098928539082407,
+      "mse_p95": 0.0221676956862211,
+      "mse_p99": 0.0276675578206777,
+      "mse_max": 0.0299802627414464
+    },
+    {
+      "polename": "SCCP-SP-03",
+      "n_normal_test": 5790,
+      "threshold": 0.2842907905578613,
+      "flagged_per_pole": 0.0,
+      "flagged_global": 0.0,
+      "mse_mean": 0.0608262680470943,
+      "mse_median": 0.0385420583188533,
+      "mse_p95": 0.1703717112541198,
+      "mse_p99": 0.1982962638139724,
+      "mse_max": 0.2329787611961364
+    },
+    {
+      "polename": "SCCP-SP-04",
+      "n_normal_test": 2517,
+      "threshold": 0.5629686713218689,
+      "flagged_per_pole": 0.0051648788239968,
+      "flagged_global": 0.0329757647993643,
+      "mse_mean": 0.2006597369909286,
+      "mse_median": 0.1961331218481063,
+      "mse_p95": 0.3950098752975464,
+      "mse_p99": 0.5197244882583618,
+      "mse_max": 0.5819510221481323
+    },
+    {
+      "polename": "SCCP-SP-05",
+      "n_normal_test": 757,
+      "threshold": 0.3153568208217621,
+      "flagged_per_pole": 0.0739762219286657,
+      "flagged_global": 0.0,
+      "mse_mean": 0.2242690622806549,
+      "mse_median": 0.2344143092632293,
+      "mse_p95": 0.327367216348648,
+      "mse_p99": 0.343660444021225,
+      "mse_max": 0.3500693142414093
+    },
+    {
+      "polename": "SCCP-SP-06",
+      "n_normal_test": 84,
+      "threshold": 0.3502571880817413,
+      "flagged_per_pole": 0.0,
+      "flagged_global": 0.0,
+      "mse_mean": 0.1003902107477188,
+      "mse_median": 0.1006779745221138,
+      "mse_p95": 0.1357546150684356,
+      "mse_p99": 0.1378425061702728,
+      "mse_max": 0.1380035877227783
+    },
+    {
+      "polename": "SCCP-SP-07",
+      "n_normal_test": 5908,
+      "threshold": 0.0220334455370903,
+      "flagged_per_pole": 0.0,
+      "flagged_global": 0.0,
+      "mse_mean": 0.0111989853903651,
+      "mse_median": 0.0111150974407792,
+      "mse_p95": 0.0180408973246812,
+      "mse_p99": 0.0200827904045581,
+      "mse_max": 0.021970011293888
+    },
+    {
+      "polename": "SCCP-SP-08",
+      "n_normal_test": 5830,
+      "threshold": 0.0216165147721767,
+      "flagged_per_pole": 0.0,
+      "flagged_global": 0.0,
+      "mse_mean": 0.0095193115994334,
+      "mse_median": 0.0091712269932031,
+      "mse_p95": 0.0175641570240259,
+      "mse_p99": 0.0190517716109752,
+      "mse_max": 0.0203520990908145
+    },
+    {
+      "polename": "SCCP-SP-09",
+      "n_normal_test": 5661,
+      "threshold": 0.0201727859675884,
+      "flagged_per_pole": 0.0,
+      "flagged_global": 0.0,
+      "mse_mean": 0.0053054741583764,
+      "mse_median": 0.0035818559117615,
+      "mse_p95": 0.0141686648130416,
+      "mse_p99": 0.0180310551077127,
+      "mse_max": 0.0192802883684635
+    },
+    {
+      "polename": "SCCP-SP-10",
+      "n_normal_test": 104,
+      "threshold": 0.5708943009376526,
+      "flagged_per_pole": 0.0,
+      "flagged_global": 0.0,
+      "mse_mean": 0.2374034821987152,
+      "mse_median": 0.2280724048614502,
+      "mse_p95": 0.3382554650306701,
+      "mse_p99": 0.3511463403701782,
+      "mse_max": 0.3548617959022522
+    }
+  ],
+  "summary": {
+    "per_pole_avg_flagged": 0.908280926225811,
+    "global_avg_flagged": 0.329757647993643,
+    "target": 1.0
+  },
+  "known_events": [
+    {
+      "polename": "SCCP-SP-10",
+      "event_type": "outage",
+      "event_start": "2026-02-04 15:05:08",
+      "event_end": "2026-02-13 13:54:45",
+      "description": "斷訊8 days 22:49:37",
+      "n_event_windows": 1,
+      "event_flagged_pct": 0.0,
+      "n_baseline_windows": 4705,
+      "baseline_flagged_pct": 1.0839532412327313
+    },
+    {
+      "polename": "SCCP-SP-06",
+      "event_type": "outage",
+      "event_start": "2026-02-27 06:39:46",
+      "event_end": "2026-02-28 23:59:44",
+      "description": "資料提前結束(比其他柱體早1 days 17:19:58無資料)",
+      "n_event_windows": 0,
+      "event_flagged_pct": null,
+      "n_baseline_windows": 445,
+      "baseline_flagged_pct": 0.0
+    },
+    {
+      "polename": "SCCP-SP-07",
+      "event_type": "outage",
+      "event_start": "2026-01-05 14:03:15",
+      "event_end": "2026-01-05 20:09:32",
+      "description": "斷訊0 days 06:06:17",
+      "n_event_windows": 66,
+      "event_flagged_pct": 100.0,
+      "n_baseline_windows": 1075,
+      "baseline_flagged_pct": 8.744186046511627
+    },
+    {
+      "polename": "SCCP-SP-08",
+      "event_type": "outage",
+      "event_start": "2026-01-11 15:18:18",
+      "event_end": "2026-01-11 17:15:35",
+      "description": "斷訊0 days 01:57:17",
+      "n_event_windows": 64,
+      "event_flagged_pct": 100.0,
+      "n_baseline_windows": 3988,
+      "baseline_flagged_pct": 61.53460381143431
+    },
+    {
+      "polename": "SCCP-SP-07",
+      "event_type": "value_anomaly",
+      "event_start": "2026-01-02 00:00:00",
+      "event_end": "2026-01-22 23:59:59",
+      "description": "路燈迴路(11325)用電持續異常(均值15瓦跳升至1500瓦,約100倍,1/23恢復正常)",
+      "n_event_windows": 10646,
+      "event_flagged_pct": 77.75690400150292,
+      "n_baseline_windows": 448,
+      "baseline_flagged_pct": 0.0
+    },
+    {
+      "polename": "SCCP-SP-08",
+      "event_type": "value_anomaly",
+      "event_start": "2026-01-02 00:00:00",
+      "event_end": "2026-01-22 23:59:59",
+      "description": "路燈迴路(11335)用電持續異常(均值15瓦跳升至1500瓦,約100倍,1/23恢復正常,與SP-07同步發生)",
+      "n_event_windows": 10752,
+      "event_flagged_pct": 77.99479166666666,
+      "n_baseline_windows": 459,
+      "baseline_flagged_pct": 0.4357298474945534
+    }
+  ]
+}

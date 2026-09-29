@@ -1,0 +1,18 @@
+# 原始資料包(隱私/體積考量，不進版控)
+智慧杆資料應用整合工作坊_數據資料包_0930&1007場次/
+
+# pipeline 產出的中繼/大型資料，皆可由 scripts 重新產生，不進版控
+pipeline/cleaned/
+pipeline/model_dataset/
+pipeline/experiments/
+
+# Python
+__pycache__/
+*.pyc
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude Code session state
+.claude/
